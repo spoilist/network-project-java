@@ -10,13 +10,15 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.io.File;
 
 public class Server {
 	private static ServerSocket listener;
 	
 	public static void main(String[] args) throws Exception {
-		tree<String> tree = new tree<String>("root");
 		
+		new File("c:/test");
+
 		int clientNumber = 0;
 		
 		String serverAddress = "127.0.0.1";
@@ -32,7 +34,7 @@ public class Server {
 		
 		try {
 			while(true) {
-				new ClientHandler(listener.accept(), clientNumber++, tree).start();
+				new ClientHandler(listener.accept(), clientNumber++).start();
 			}
 		} finally {
 			listener.close();
@@ -43,12 +45,20 @@ public class Server {
 class ClientHandler extends Thread {
 	private Socket socket;
 	private int clientNumber;
-	private tree<String> tree;
+	private File currentFile;
 	
-	public ClientHandler(Socket socket, int clientNumber, tree<String> tree) {
+	public ClientHandler(Socket socket, int clientNumber) {
 		this.socket = socket;
 		this.clientNumber = clientNumber;
-		this.tree = tree;
+		this.currentFile = new File("test");
+		if(!this.currentFile.exists()) {
+			boolean created = this.currentFile.mkdir();
+			if(created) {
+				System.out.println("Created base File!");
+			} else {
+				System.out.println("Error while creating base File!");
+			}			
+		}
 		System.out.println("New connection with client #" + clientNumber + " at " + socket);
 	}
 	
@@ -72,29 +82,54 @@ class ClientHandler extends Thread {
 
 		        switch(commands[0]) {
 		        	case "ls":
-		        		for (int i = 0; i < this.tree.getChildren().size(); i++) {
-		        			System.out.println(this.tree.getChildren().get(i).getData());
+		        		File[] lsFile = this.currentFile.listFiles();
+		        		String lsMessage = "";
+		        		String enterKey = System.getProperty("line.separator");
+		        		if(lsFile.length == 0) {
+		        			lsMessage += "No File/Directory found";
 		        		}
+		        		for(int i = 0; i < lsFile.length; i++) {
+		        			System.out.print(lsFile[i] + " ");
+		        			if(!lsFile[i].isFile()) {
+		        				lsMessage += "[Folder] " + lsFile[i] + enterKey;		        				
+		        			} else {
+		        				lsMessage += "[File] " + lsFile[i] + enterKey;
+		        			}
+		        		}
+		        		System.out.println();
+		        		out.writeUTF(lsMessage);
 		        		break;
 		        	case "mkdir":
 		        		if (commands.length > 1) {
-		        			this.tree.addChild(commands[1]);		        			
+		        			File newFile = new File(this.currentFile.getPath() + "/" + commands[1]);
+		        			newFile.mkdir();
+		        			out.writeUTF("Le dossier " + commands[1] + "a été créé.");
 		        		} else {
 		        			System.out.println("Please add a directory name after mkdir");
 		        		}
 		        		break;
 		        	case "cd":
 		        		if (commands.length > 1) {
-		        			for (int i = 0; i < this.tree.getChildren().size(); i++) {
-		        				if(this.tree.getChildren().get(i).getData() == commands[1]) {
-		        					this.tree.move(this.tree.getChildren().get(i));
-		        				}
-		        			}		     	
+		        			File testFile = new File(this.currentFile.getPath() + "/" + commands[1]);
+		        			if(testFile.exists()) {
+		        				this.currentFile = new File(this.currentFile.getPath() + "/" + commands[1]);
+		        				out.writeUTF("Vous êtes dans le dossier " + commands[1] + ".");
+		        			} else {
+		        				System.out.println("This path doesn't exist!");
+		        			}
 		        		} else {
 		        			System.out.println("Please add a directory name after cd");
 		        		}
 		        		break;
-		        	case "exit": break;
+		        	case "upload":
+		        		
+		        		break;
+		        	case "download":
+		        		
+		        		break;
+		        	case "exit": 
+		        		socket.close();
+		        		break;
 		        	default: System.out.println("This command doesn't exist!");
 		        }
 			}

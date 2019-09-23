@@ -32,6 +32,9 @@ public class Client {
 		    
 	        dataOutputStream.writeUTF(command);
 	        dataOutputStream.flush();
+	        
+	        String message = in.readUTF();
+	        System.out.println(message);
 		}
 		
 		scanner.close();
