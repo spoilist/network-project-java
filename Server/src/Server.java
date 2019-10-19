@@ -105,7 +105,7 @@ class ClientHandler extends Thread {
 		        			newFile.mkdir();
 		        			out.writeUTF("Le dossier " + commands[1] + "a été créé.");
 		        		} else {
-		        			System.out.println("Please add a directory name after mkdir");
+		        			out.writeUTF("Please add a directory name after mkdir");
 		        		}
 		        		break;
 		        	case "cd":
@@ -115,10 +115,10 @@ class ClientHandler extends Thread {
 		        				this.currentFile = new File(this.currentFile.getPath() + "/" + commands[1]);
 		        				out.writeUTF("Vous êtes dans le dossier " + commands[1] + ".");
 		        			} else {
-		        				System.out.println("This path doesn't exist!");
+		        				out.writeUTF("This path doesn't exist!");
 		        			}
 		        		} else {
-		        			System.out.println("Please add a directory name after cd");
+		        			out.writeUTF("Please add a directory name after cd");
 		        		}
 		        		break;
 		        	case "upload":
@@ -130,7 +130,7 @@ class ClientHandler extends Thread {
 		        	case "exit": 
 		        		socket.close();
 		        		break;
-		        	default: System.out.println("This command doesn't exist!");
+		        	default: out.writeUTF("This command doesn't exist!");
 		        }
 			}
 		} catch(IOException e) {
