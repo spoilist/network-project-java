@@ -1,11 +1,14 @@
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Client {
@@ -35,17 +38,33 @@ public class Client {
 		    String[] commands = command.split(" ", 2);
 		    
 		    if (commands[0].equals("upload")) {
-		    	File file = new File("myfile.txt");
-		    	System.out.println(file.getAbsolutePath());
-		    	byte[] fileContent = Files.readAllBytes(file.toPath());
-		    	dataOutputStream.writeLong(file.length());
-		    	dataOutputStream.write(fileContent);
+		    	dataOutputStream.writeUTF(command);
+		    	//File file = new File("myfile.txt");
+		        //byte[] bytes = new byte[16 * 1024];
+		        //bytes = Files.readAllBytes(file.toPath());
+		    	String a = "a";
+		        
+		        // sending data to server
+		        outputStream.write(a.getBytes());
+		        
+		        // Receiving reply from server
+		        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				byte buffer[] = new byte[1024];
+				baos.write(buffer, 0 , in.read(buffer));
+				
+				byte result[] = baos.toByteArray();
+
+				String res = Arrays.toString(result);
+
+				// printing reply to console
+				System.out.println("Recieved from server : " + res);
+				baos.close();
 		    } else {
 		    	dataOutputStream.writeUTF(command);		    	
 		    }
 	        
-	        String message = in.readUTF();
-	        System.out.println(message);
+	        // String message = in.readUTF();
+	        // System.out.println(message);
 		}
 		
 		scanner.close();
