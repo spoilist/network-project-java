@@ -83,40 +83,50 @@ class ClientHandler extends Thread {
 		        switch(commands[0]) {
 		        	case "ls":
 		        		File[] lsFile = this.currentFile.listFiles();
+		        		System.out.println(lsFile);
 		        		String lsMessage = "";
+		        		String indicator = null;
 		        		String enterKey = System.getProperty("line.separator");
 		        		if(lsFile.length == 0) {
 		        			lsMessage += "No File/Directory found";
 		        		}
 		        		for(int i = 0; i < lsFile.length; i++) {
 		        			System.out.print(lsFile[i] + " ");
-		        			if(!lsFile[i].isFile()) {
-		        				lsMessage += "[Folder] " + lsFile[i] + enterKey;		        				
+		        			if(lsFile[i].isFile()) {
+		        				indicator = "[File] ";
 		        			} else {
-		        				lsMessage += "[File] " + lsFile[i] + enterKey;
+		        				indicator = "[Folder] ";
 		        			}
+		        			lsMessage += indicator + lsFile[i].toString().substring(lsFile[i].toString().lastIndexOf("/") + 1) + enterKey;
 		        		}
-		        		System.out.println();
 		        		out.writeUTF(lsMessage);
 		        		break;
 		        	case "mkdir":
 		        		if (commands.length > 1) {
 		        			File newFile = new File(this.currentFile.getPath() + "/" + commands[1]);
 		        			newFile.mkdir();
-		        			out.writeUTF("Le dossier " + commands[1] + "a été créé.");
+		        			out.writeUTF("Le dossier " + commands[1] + " a été créé.");
 		        		} else {
 		        			out.writeUTF("Please add a directory name after mkdir");
 		        		}
 		        		break;
 		        	case "cd":
 		        		if (commands.length > 1) {
-		        			File testFile = new File(this.currentFile.getPath() + "/" + commands[1]);
-		        			if(testFile.exists()) {
-		        				this.currentFile = new File(this.currentFile.getPath() + "/" + commands[1]);
-		        				out.writeUTF("Vous êtes dans le dossier " + commands[1] + ".");
-		        			} else {
+		        			String currentPath = this.currentFile.getAbsolutePath();
+		        			File testFile = new File(currentPath + "/" + commands[1]);
+		        			if(!testFile.exists()) {
 		        				out.writeUTF("This path doesn't exist!");
 		        			}
+		        			if (commands[1].contains("..")) {
+		        				int counter = commands[1].split("/").length;
+		        				System.out.print(counter);
+		        				for (int i = 0; i < counter; i++) {
+		        					this.currentFile = this.currentFile.getParentFile();
+		        				}
+		        			} else {
+		        				this.currentFile = testFile;
+		        			}
+		        			out.writeUTF("Vous êtes dans le dossier " + this.currentFile.getPath().substring(this.currentFile.getPath().lastIndexOf("/") + 1) + ".");		        					
 		        		} else {
 		        			out.writeUTF("Please add a directory name after cd");
 		        		}
