@@ -12,19 +12,45 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Scanner;
 import java.io.File;
 
 public class Server {
 	private static ServerSocket listener;
+	private static int serverPort = 0;
+	
+	public void checkPortNumber(Scanner input) {
+		try {
+			
+			System.out.println("Please enter the port number you would like to use: ");
+			
+			for (;;) {
+				portNumber = input.nextInt();
+				
+				if (portNumber >= 5000 && portNumber <= 5050) {
+					break;
+				}
+				
+				System.out.println("The port number must be an integer between 5000 and 5050.");
+				System.out.println("Please enter a valid port number you would like to use: ");
+			}
+			
+		} catch (Exception e) {
+			System.out.println("The port number must be an integer between 5000 and 5050. Please try again.");
+		}
+		System.out.println("Valid port number entered. \n");
+	}
 	
 	public static void main(String[] args) throws Exception {
+		Server server = new Server();
+		Scanner input = new Scanner(System.in);
 		
 		new File("c:/test");
 
 		int clientNumber = 0;
 		
 		String serverAddress = "127.0.0.1";
-		int serverPort = 5000;
+		server.
 		
 		listener = new ServerSocket();
 		listener.setReuseAddress(true);
