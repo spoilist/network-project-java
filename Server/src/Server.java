@@ -1,5 +1,6 @@
 package src;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -10,64 +11,68 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.io.File;
+import java.io.FileOutputStream;
 
 public class Server {
-	private static ServerSocket listener;
-	private static int serverPort = 0;
-	
-	public void checkPortNumber(Scanner input) {
-		try {
-			
-			System.out.println("Please enter the port number you would like to use: ");
-			
-			for (;;) {
-				portNumber = input.nextInt();
-				
-				if (portNumber >= 5000 && portNumber <= 5050) {
-					break;
-				}
-				
-				System.out.println("The port number must be an integer between 5000 and 5050.");
-				System.out.println("Please enter a valid port number you would like to use: ");
-			}
-			
-		} catch (Exception e) {
-			System.out.println("The port number must be an integer between 5000 and 5050. Please try again.");
-		}
-		System.out.println("Valid port number entered. \n");
-	}
-	
-	public static void main(String[] args) throws Exception {
-		Server server = new Server();
-		Scanner input = new Scanner(System.in);
-		
-		new File("c:/test");
+    private static ServerSocket listener;
+    private static int serverPort = 0;
 
-		int clientNumber = 0;
-		
-		String serverAddress = "127.0.0.1";
-		server.
-		
-		listener = new ServerSocket();
-		listener.setReuseAddress(true);
-		InetAddress serverIp = InetAddress.getByName(serverAddress);
-		
-		listener.bind(new InetSocketAddress(serverIp, serverPort));
-		
-		System.out.format("Server running on %s:%d%n", serverAddress, serverPort);
-		
-		try {
-			while(true) {
-				new ClientHandler(listener.accept(), clientNumber++).start();
-			}
-		} finally {
-			listener.close();
-		}
-	}
+    public void checkPortNumber(Scanner input) {
+        try {
+
+            System.out.println("Please enter the port number you would like to use: ");
+
+            for (;;) {
+                serverPort = input.nextInt();
+
+                if (serverPort >= 5000 && serverPort <= 5050) {
+                    break;
+                }
+
+                System.out.println("The port number must be an integer between 5000 and 5050.");
+                System.out.println("Please enter a valid port number you would like to use: ");
+            }
+
+        } catch (Exception e) {
+            System.out.println("The port number must be an integer between 5000 and 5050. Please try again.");
+        }
+        System.out.println("Valid port number entered. \n");
+    }
+
+    public static void main(String[] args) throws Exception {
+        Server server = new Server();
+        Scanner input = new Scanner(System.in);
+
+        new File("c:/test");
+
+        int clientNumber = 0;
+
+        String serverAddress = "127.0.0.1";
+        server.checkPortNumber(input);
+
+        listener = new ServerSocket();
+        listener.setReuseAddress(true);
+        InetAddress serverIp = InetAddress.getByName(serverAddress);
+
+        listener.bind(new InetSocketAddress(serverIp, serverPort));
+
+        System.out.format("Server running on %s:%d%n", serverAddress, serverPort);
+
+        try {
+            while(true) {
+                new ClientHandler(listener.accept(), clientNumber++).start();
+            }
+        } finally {
+            listener.close();
+        }
+    }
 }
 
 class ClientHandler extends Thread {
@@ -106,19 +111,7 @@ class ClientHandler extends Thread {
 		        message = dataInputStream.readUTF();
 		        String baseMessage = "[" + this.socket.getInetAddress() + ":" + this.socket.getLocalPort() + " - " + LocalDate.now() + "@" + LocalTime.now() + "]: ";
 		        System.out.println(baseMessage + message);
-		        String[] commands = null;
-		        if (message.contains("upload")) {
-		        	long length = dataInputStream.readLong();
-	        		if(length>0) {
-	        			ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-	        		    buffer.putLong(length);
-	        		    dataInputStream.readFully(buffer.array(), 0, buffer.array().length);
-	        		    System.out.println(buffer);
-	        		}
-	        		out.writeUTF("upload");
-		        } else {
-		        	commands = message.split(" ", 2); 				        	
-		        }
+		        String[] commands = message.split(" ", 2); 	
 		        
 		        switch(commands[0]) {
 		        	case "ls":
@@ -172,7 +165,18 @@ class ClientHandler extends Thread {
 		        		}
 		        		break;
 		        	case "upload":
-		        		
+		        		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		    			byte buffer[] = new byte[16 * 1024];
+		    			baos.write(buffer, 0 , inputStream.read(buffer));
+		    			
+		    			byte result[] = baos.toByteArray();
+
+		    			String res = Arrays.toString(result);
+		    			System.out.println("Recieved from client : "+res); 
+		    			out.writeUTF(res);
+		    			
+		    			Files.write(Paths.get("/Users/felix-antoinebourbonnais/Documents/A2019/inf3405/network-project-java/Client/myfile.txt"), result);
+		    			baos.close();
 		        		break;
 		        	case "download":
 		        		out.writeUTF("download");
