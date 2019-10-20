@@ -160,7 +160,7 @@ class ClientHandler extends Thread {
 		        			} else {
 		        				this.currentFile = testFile;
 		        			}
-		        			out.writeUTF("Vous êtes dans le dossier " + this.currentFile.getPath().substring(this.currentFile.getPath().lastIndexOf("/") + 1) + ".");		        					
+		        			out.writeUTF("Vous êtes dans le dossier " + this.currentFile.getAbsolutePath().substring(this.currentFile.getAbsolutePath().lastIndexOf("/") + 1) + ".");		        					
 		        		} else {
 		        			out.writeUTF("Please add a directory name after cd");
 		        		}
