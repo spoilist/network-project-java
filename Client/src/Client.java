@@ -1,12 +1,16 @@
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.util.Scanner;
 
 public class Client {
 	private static Socket socket;
-	
+	// /Users/felix-antoinebourbonnais/Documents/A2019/inf3405/myfile.txt
 	public static void main(String[] args) throws Exception {
 		String SERVER_ADDRESS = "127.0.0.1";
 		int PORT = 5000;
@@ -28,10 +32,17 @@ public class Client {
 		while (!command.equals("exit")) {
 		    System.out.println("Enter command");
 		    command = scanner.nextLine();
-		    System.out.println(command);
+		    String[] commands = command.split(" ", 2);
 		    
-	        dataOutputStream.writeUTF(command);
-	        dataOutputStream.flush();
+		    if (commands[0].equals("upload")) {
+		    	File file = new File("myfile.txt");
+		    	System.out.println(file.getAbsolutePath());
+		    	byte[] fileContent = Files.readAllBytes(file.toPath());
+		    	dataOutputStream.writeLong(file.length());
+		    	dataOutputStream.write(fileContent);
+		    } else {
+		    	dataOutputStream.writeUTF(command);		    	
+		    }
 	        
 	        String message = in.readUTF();
 	        System.out.println(message);

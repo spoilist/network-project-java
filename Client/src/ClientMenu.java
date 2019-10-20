@@ -33,8 +33,9 @@ public class ClientMenu {
 			System.out.println("Please enter the server's IP address: ");
 			
 			for (;;) {
-				portNumber = input.nextInt();
 				System.out.println("1");
+				ipAddress = input.nextLine();
+				System.out.println("2" + ipAddress);
 				if (validIP(ipAddress)) {
 					System.out.println("2");
 					break;
