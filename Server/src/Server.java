@@ -8,6 +8,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.io.File;
@@ -78,8 +80,20 @@ class ClientHandler extends Thread {
 		        message = dataInputStream.readUTF();
 		        String baseMessage = "[" + this.socket.getInetAddress() + ":" + this.socket.getLocalPort() + " - " + LocalDate.now() + "@" + LocalTime.now() + "]: ";
 		        System.out.println(baseMessage + message);
-		        String[] commands = message.split(" ", 2); 
-
+		        String[] commands = null;
+		        if (message.contains("upload")) {
+		        	long length = dataInputStream.readLong();
+	        		if(length>0) {
+	        			ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+	        		    buffer.putLong(length);
+	        		    dataInputStream.readFully(buffer.array(), 0, buffer.array().length);
+	        		    System.out.println(buffer);
+	        		}
+	        		out.writeUTF("upload");
+		        } else {
+		        	commands = message.split(" ", 2); 				        	
+		        }
+		        
 		        switch(commands[0]) {
 		        	case "ls":
 		        		File[] lsFile = this.currentFile.listFiles();
@@ -135,7 +149,7 @@ class ClientHandler extends Thread {
 		        		
 		        		break;
 		        	case "download":
-		        		
+		        		out.writeUTF("download");
 		        		break;
 		        	case "exit": 
 		        		socket.close();
