@@ -19,7 +19,6 @@ public class Client {
 		try {
 			
 			System.out.println("Please enter the server's IP address: ");
-			input.nextLine();
 			
 			for (;;) {
 				ipAddress = input.nextLine();
@@ -111,7 +110,7 @@ public class Client {
 		DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 		
 		while (!command.equals("exit")) {
-		    System.out.println("Enter command");
+		    System.out.println("Enter command: \n");
 		    command = input.nextLine();
 		    String[] commands = command.split(" ", 2);
 		    
