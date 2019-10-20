@@ -9,16 +9,12 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.Scanner;
 import java.io.File;
-import java.io.FileOutputStream;
 
 public class Server {
     private static ServerSocket listener;
@@ -116,21 +112,24 @@ class ClientHandler extends Thread {
 		        switch(commands[0]) {
 		        	case "ls":
 		        		File[] lsFile = this.currentFile.listFiles();
-		        		System.out.println(lsFile);
 		        		String lsMessage = "";
 		        		String indicator = null;
 		        		String enterKey = System.getProperty("line.separator");
-		        		if(lsFile.length == 0) {
-		        			lsMessage += "No File/Directory found";
-		        		}
-		        		for(int i = 0; i < lsFile.length; i++) {
-		        			System.out.print(lsFile[i] + " ");
-		        			if(lsFile[i].isFile()) {
-		        				indicator = "[File] ";
-		        			} else {
-		        				indicator = "[Folder] ";
+		        		if (commands.length > 1) {
+		        			lsMessage += "Please do not enter any parameters after ls command.";
+		        		} else {
+		        			if(lsFile.length == 0) {
+		        				lsMessage += "No File/Directory found";
 		        			}
-		        			lsMessage += indicator + lsFile[i].toString().substring(lsFile[i].toString().lastIndexOf("/") + 1) + enterKey;
+		        			for(int i = 0; i < lsFile.length; i++) {
+		        				System.out.print(lsFile[i] + " ");
+		        				if(lsFile[i].isFile()) {
+		        					indicator = "[File] ";
+		        				} else {
+		        					indicator = "[Folder] ";
+		        				}
+		        				lsMessage += indicator + lsFile[i].toString().substring(lsFile[i].toString().lastIndexOf("/") + 1) + enterKey;
+		        			}
 		        		}
 		        		out.writeUTF(lsMessage);
 		        		break;
@@ -165,23 +164,29 @@ class ClientHandler extends Thread {
 		        		}
 		        		break;
 		        	case "upload":
+		        		String fileNameU = commands[1]; 
 		        		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		    			byte buffer[] = new byte[16 * 1024];
-		    			baos.write(buffer, 0 , inputStream.read(buffer));
-		    			
+		    			baos.write(buffer, 0 , inputStream.read(buffer));		    			
 		    			byte result[] = baos.toByteArray();
-
-		    			String res = Arrays.toString(result);
-		    			System.out.println("Recieved from client : "+res); 
-		    			out.writeUTF(res);
-		    			
-		    			Files.write(Paths.get("/Users/felix-antoinebourbonnais/Documents/A2019/inf3405/network-project-java/Client/myfile.txt"), result);
+		    			out.writeUTF("Le fichier " + fileNameU + " a bien été téléversé.");		    			
+		    			Files.write(Paths.get(this.currentFile.getAbsolutePath() + "/" + fileNameU), result);
 		    			baos.close();
 		        		break;
 		        	case "download":
-		        		out.writeUTF("download");
+		        		String fileNameD = commands[1]; 
+		        		File file = new File(this.currentFile.getAbsolutePath() + "/" + fileNameD);
+				    	if (file.exists()) {
+				    		byte[] bytes = new byte[16 * 1024];
+				    		bytes = Files.readAllBytes(file.toPath());
+				    		out.writeUTF("Le fichier " + fileNameD + " a bien été téléversé.");	
+				    		out.write(bytes);
+				    	} else {
+				    		out.writeUTF("This file doesn't exist.");
+				    	}
 		        		break;
 		        	case "exit": 
+		        		out.writeUTF("Vous avez été déconnecté avec succès.");
 		        		socket.close();
 		        		break;
 		        	default: out.writeUTF("This command doesn't exist!");
