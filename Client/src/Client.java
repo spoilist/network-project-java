@@ -1,6 +1,7 @@
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -13,7 +14,6 @@ public class Client {
 	
 	private static String ipAddress = "";
 	private static int portNumber = 0;
-	// /Users/felix-antoinebourbonnais/Documents/A2019/inf3405/myfile.txt
 	
 	public void checkIpAddress(Scanner input) {
 		try {
@@ -106,24 +106,19 @@ public class Client {
 		System.out.println(helloMessageFromServer);
 		
 		String command = "";
+		command = input.nextLine();
 		OutputStream outputStream = socket.getOutputStream();
 		DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 		
 		while (!command.equals("exit")) {
-		    System.out.println("Enter command: \n");
+		    System.out.println("Enter command:");
 		    command = input.nextLine();
 		    String[] commands = command.split(" ", 2);
 		    
 		    if (commands[0].equals("upload")) {
-		    	// upload(commands[1], command, dataOutputStream, outputStream);
 		    	File file = new File(commands[1]);
 		    	if (file.exists()) {
-		    		dataOutputStream.writeUTF(command);
-		    		byte[] bytes = new byte[16 * 1024];
-		    		bytes = Files.readAllBytes(file.toPath());
-		    		
-		    		outputStream.write(bytes);
-		    		
+		    		upload(file, command, dataOutputStream, outputStream);		    		
 		    		String message = in.readUTF();
 			    	System.out.println(message);
 		    	} else {
@@ -133,12 +128,7 @@ public class Client {
 		    	dataOutputStream.writeUTF(command);
 		    	String message = in.readUTF();
 		    	if (!message.equals("This file doesn't exist.")) {
-		    		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		    		byte buffer[] = new byte[16 * 1024];
-		    		baos.write(buffer, 0 , in.read(buffer));		    			
-		    		byte result[] = baos.toByteArray();		    		
-		    		Files.write(Paths.get(commands[1]), result);
-		    		baos.close();	
+		    		download(commands, in);	
 		    	}
     			
 		    	System.out.println(message);
@@ -155,21 +145,29 @@ public class Client {
 		
 		socket.close();
 	}
-	/*
-	public static void upload(String fileName, String command, DataOutputStream dataOutputStream, 
-			OutputStream outputStream) {
-		File file = new File(fileName);
-    	if (file.exists()) {
-    		dataOutputStream.writeUTF(command);
-    		byte[] bytes = new byte[16 * 1024];
-    		bytes = Files.readAllBytes(file.toPath());
-    		
-    		outputStream.write(bytes);
-    		
-    		String message = in.readUTF();
-	    	System.out.println(message);
-    	} else {
-    		System.out.println("This file doesn't exist.");
-    	}	
-	}*/
+	
+	public static void upload(File file, String command, DataOutputStream dataOutputStream, OutputStream outputStream) {
+		try {
+			dataOutputStream.writeUTF(command);
+			byte[] bytes = new byte[16 * 1024];
+			bytes = Files.readAllBytes(file.toPath());
+			
+			outputStream.write(bytes);				
+		} catch(IOException e) {
+			System.out.println("Error while uploading!");
+		}
+	}
+	
+	public static void download(String[] commands, DataInputStream in) {
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    		byte buffer[] = new byte[16 * 1024];
+    		baos.write(buffer, 0 , in.read(buffer));		    			
+    		byte result[] = baos.toByteArray();		    		
+    		Files.write(Paths.get(commands[1]), result);
+    		baos.close();	
+		} catch(IOException e) {
+			System.out.println("Error while downloading!");
+		}
+	}
 }

@@ -3,20 +3,17 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.Scanner;
 import java.io.File;
-import java.io.FileOutputStream;
 
 public class Server {
     private static ServerSocket listener;
@@ -96,12 +93,10 @@ class ClientHandler extends Thread {
 	public void run() {
 		try {
 			
-			// OUTPUT
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 			
 			out.writeUTF("Hello from server - you are client #" + clientNumber + " on thread " + Thread.currentThread().getId());
 			
-			// INPUT
 			String message = "";
 			InputStream inputStream = socket.getInputStream();
 			DataInputStream dataInputStream = new DataInputStream(inputStream);
@@ -167,22 +162,13 @@ class ClientHandler extends Thread {
 		        		break;
 		        	case "upload":
 		        		String fileNameU = commands[1]; 
-		        		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		    			byte buffer[] = new byte[16 * 1024];
-		    			baos.write(buffer, 0 , inputStream.read(buffer));		    			
-		    			byte result[] = baos.toByteArray();
-		    			out.writeUTF("Le fichier " + fileNameU + " a bien été téléversé.");		    			
-		    			Files.write(Paths.get(this.currentFile.getAbsolutePath() + "/" + fileNameU), result);
-		    			baos.close();
+		        		download(fileNameU, this.currentFile.getAbsolutePath(), out, inputStream);
 		        		break;
 		        	case "download":
 		        		String fileNameD = commands[1]; 
 		        		File file = new File(this.currentFile.getAbsolutePath() + "/" + fileNameD);
 				    	if (file.exists()) {
-				    		byte[] bytes = new byte[16 * 1024];
-				    		bytes = Files.readAllBytes(file.toPath());
-				    		out.writeUTF("Le fichier " + fileNameD + " a bien été téléversé.");	
-				    		out.write(bytes);
+				    		upload(file, fileNameD, out);
 				    	} else {
 				    		out.writeUTF("This file doesn't exist.");
 				    	}
@@ -203,6 +189,31 @@ class ClientHandler extends Thread {
 				System.out.println("Couldn't close socket!");				
 			}
 			System.out.println("Connection with client #" + clientNumber + " closed!");
+		}
+	}
+	
+	public static void upload(File file, String fileNameD, DataOutputStream out) {
+		try {
+			byte[] bytes = new byte[16 * 1024];
+			bytes = Files.readAllBytes(file.toPath());
+			out.writeUTF("Le fichier " + fileNameD + " a bien été téléversé.");	
+			out.write(bytes);			
+		} catch(IOException e) {
+			System.out.println("Error while upload!");	
+		}
+	}
+	
+	public static void download(String fileNameU, String currentPath, DataOutputStream out, InputStream inputStream) {
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			byte buffer[] = new byte[16 * 1024];
+			baos.write(buffer, 0 , inputStream.read(buffer));		    			
+			byte result[] = baos.toByteArray();
+			out.writeUTF("Le fichier " + fileNameU + " a bien été téléversé.");		    			
+			Files.write(Paths.get(currentPath + "/" + fileNameU), result);
+			baos.close();			
+		} catch(IOException e) {
+			System.out.println("Error while download!");	
 		}
 	}
 }
