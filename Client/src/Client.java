@@ -15,6 +15,9 @@ public class Client {
 	private static String ipAddress = "";
 	private static int portNumber = 0;
 	
+	/**
+	 * @param input
+	 */
 	public void checkIpAddress(Scanner input) {
 		try {
 			
@@ -38,6 +41,10 @@ public class Client {
 		System.out.println("Valid IP address entered. \n");
 	}
 	
+	/**
+	 * @param ip
+	 * @return
+	 */
 	public boolean validIP (String ip) {
 	    try {
 	        if ( ip == null || ip.isEmpty() ) {
@@ -65,6 +72,9 @@ public class Client {
 	    }
 	}
 	
+	/**
+	 * @param input
+	 */
 	public void checkPortNumber(Scanner input) {
 		try {
 			
@@ -88,6 +98,10 @@ public class Client {
 	}
 	
 	
+	/**
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		Client client = new Client();
 		Scanner input = new Scanner(System.in);
@@ -146,6 +160,12 @@ public class Client {
 		socket.close();
 	}
 	
+	/**
+	 * @param file
+	 * @param command
+	 * @param dataOutputStream
+	 * @param outputStream
+	 */
 	public static void upload(File file, String command, DataOutputStream dataOutputStream, OutputStream outputStream) {
 		try {
 			dataOutputStream.writeUTF(command);
@@ -158,6 +178,10 @@ public class Client {
 		}
 	}
 	
+	/**
+	 * @param commands
+	 * @param in
+	 */
 	public static void download(String[] commands, DataInputStream in) {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();

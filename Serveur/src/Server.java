@@ -3,7 +3,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -19,6 +18,9 @@ public class Server {
     private static ServerSocket listener;
     private static int serverPort = 0;
 
+    /**
+     * @param input
+     */
     public void checkPortNumber(Scanner input) {
         try {
 
@@ -41,6 +43,10 @@ public class Server {
         System.out.println("Valid port number entered. \n");
     }
 
+    /**
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         Server server = new Server();
         Scanner input = new Scanner(System.in);
@@ -75,6 +81,10 @@ class ClientHandler extends Thread {
 	private int clientNumber;
 	private File currentFile;
 	
+	/**
+	 * @param socket
+	 * @param clientNumber
+	 */
 	public ClientHandler(Socket socket, int clientNumber) {
 		this.socket = socket;
 		this.clientNumber = clientNumber;
@@ -145,8 +155,8 @@ class ClientHandler extends Thread {
 		        			File testFile = new File(currentPath + "/" + commands[1]);
 		        			if(!testFile.exists()) {
 		        				out.writeUTF("This path doesn't exist!");
-		        			}
-		        			if (commands[1].contains("..")) {
+		        				break;
+		        			} else if (commands[1].contains("..")) {
 		        				int counter = commands[1].split("/").length;
 		        				System.out.print(counter);
 		        				for (int i = 0; i < counter; i++) {
@@ -192,6 +202,11 @@ class ClientHandler extends Thread {
 		}
 	}
 	
+	/**
+	 * @param file
+	 * @param fileNameD
+	 * @param out
+	 */
 	public static void upload(File file, String fileNameD, DataOutputStream out) {
 		try {
 			byte[] bytes = new byte[16 * 1024];
@@ -203,6 +218,12 @@ class ClientHandler extends Thread {
 		}
 	}
 	
+	/**
+	 * @param fileNameU
+	 * @param currentPath
+	 * @param out
+	 * @param inputStream
+	 */
 	public static void download(String fileNameU, String currentPath, DataOutputStream out, InputStream inputStream) {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
